@@ -312,7 +312,7 @@ Automation systems should be designed and operated responsibly and in accordance
 
 ## Related Topics
 
-- [Social Media Automation Architecture]((https://github.com/DaisyJarvis/social-media-ai-agents/blob/main/Social%20Media%20Automation%20Architecture))
+- [Social Media Automation Architecture]([(https://github.com/DaisyJarvis/social-media-ai-agents/blob/main/Social%20Media%20Automation%20Architecture](https://github.com/DaisyJarvis/social-media-ai-agents/blob/main/Social%20Media%20Automation%20Architecture)))
 - [Account Isolation](../account-management/account-isolation.md)
 - [Browser Fingerprint Isolation](../browser-automation/browser-fingerprinting.md)
 - [Proxy Account Mapping](../proxy-infrastructure/proxy-account-mapping.md)
