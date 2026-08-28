@@ -1,0 +1,828 @@
+# Proxy Account Mapping in Social Media Automation
+
+**Status:** Living document
+**Last Updated:** 2026-08-28
+
+Managing network infrastructure becomes increasingly difficult when a social media automation system operates multiple accounts.
+
+With a small number of accounts, network settings can often be configured manually. As the number of accounts increases, however, the system needs a reliable way to determine which network configuration belongs to which account, which worker is using it, and what happens when a connection fails.
+
+This is where **proxy account mapping** becomes useful.
+
+Proxy account mapping is the practice of maintaining a clear relationship between social media accounts and their assigned network configurations.
+
+The goal is not simply to assign proxies. The goal is to make network infrastructure **organized, traceable, consistent, and easier to troubleshoot**.
+
+---
+
+# 1. What Is Proxy Account Mapping?
+
+Proxy account mapping associates an account with a specific network configuration.
+
+A simplified model looks like this:
+
+```text
+Account A → Proxy A
+Account B → Proxy B
+Account C → Proxy C
+```
+
+In a larger automation system, the relationship may include additional infrastructure:
+
+```text
+Account
+   │
+   ├── Browser Environment
+   ├── Session
+   ├── Proxy / Network Configuration
+   ├── Worker
+   └── Tasks
+```
+
+The exact implementation depends on the automation platform and network infrastructure.
+
+The important architectural principle is that the relationship between an account and its network configuration should be **explicit and easy to identify**.
+
+---
+
+# 2. Why Proxy Mapping Matters
+
+A network problem can be difficult to diagnose when an automation system manages many accounts.
+
+Consider a system with 100 accounts.
+
+If a connection fails, the operator needs to know:
+
+```text
+Which account?
+Which worker?
+Which network configuration?
+When did the failure occur?
+How often has it happened?
+```
+
+Without a clear mapping, troubleshooting may require checking multiple components manually.
+
+With account-level mapping:
+
+```text
+Account A
+   ↓
+Proxy A
+   ↓
+Worker A
+   ↓
+Connection Error
+```
+
+the affected part of the infrastructure is easier to identify.
+
+This makes proxy mapping primarily an **operational management problem**, not merely a networking problem.
+
+---
+
+# 3. Proxy Mapping vs. Proxy Rotation
+
+These concepts should not be confused.
+
+### Proxy mapping
+
+Mapping defines which network configuration is associated with an account.
+
+```text
+Account A → Proxy A
+```
+
+### Proxy rotation
+
+Rotation changes the network configuration used by an account over time.
+
+```text
+Account A
+   ↓
+Proxy A
+   ↓
+Proxy B
+   ↓
+Proxy C
+```
+
+These are different architectural strategies.
+
+For authenticated multi-account workflows, predictable account-to-network relationships can be easier to manage than constantly changing mappings.
+
+The appropriate strategy depends on the application, platform requirements, and network infrastructure.
+
+---
+
+# 4. Account-to-Proxy Mapping Model
+
+A simple mapping table might look like:
+
+| Account   | Platform  | Network Configuration | Status     |
+| --------- | --------- | --------------------- | ---------- |
+| Account A | Instagram | Proxy A               | Active     |
+| Account B | Instagram | Proxy B               | Active     |
+| Account C | TikTok    | Proxy C               | Active     |
+| Account D | YouTube   | Proxy D               | Monitoring |
+
+The table does not need to be implemented literally.
+
+The important concept is maintaining a reliable relationship between:
+
+```text
+Account
+   ↓
+Network Configuration
+   ↓
+Current Status
+```
+
+---
+
+# 5. Why One Account Should Have a Clearly Defined Network Configuration
+
+For many multi-account workflows, a predictable relationship between an account and its network configuration makes infrastructure easier to manage.
+
+For example:
+
+```text
+Account A → Network A
+
+Account B → Network B
+
+Account C → Network C
+```
+
+This makes it easier to determine which network configuration is responsible for a connection issue.
+
+It also reduces ambiguity when several automation workers operate simultaneously.
+
+This does **not** mean that one particular mapping strategy is universally required.
+
+The appropriate design depends on the platform, account requirements, proxy provider, and automation architecture.
+
+---
+
+# 6. Proxy Mapping as Part of Account Isolation
+
+Proxy configuration should be considered one layer of account isolation.
+
+A complete account environment might look like:
+
+```text
+Account A
+├── Session A
+├── Browser Profile A
+├── Network Configuration A
+├── Content History A
+└── Automation State A
+```
+
+The proxy is therefore not the entire identity of an account.
+
+It is one component of the account's operational environment.
+
+This distinction is important because changing network configuration does not automatically change browser state, account state, or session information.
+
+---
+
+# 7. Browser Profile and Proxy Mapping
+
+Browser environments and network configurations solve different problems.
+
+A useful model is:
+
+```text
+Account A
+   │
+   ├── Browser Profile A
+   │
+   └── Proxy A
+```
+
+and:
+
+```text
+Account B
+   │
+   ├── Browser Profile B
+   │
+   └── Proxy B
+```
+
+The browser profile manages persistent browser state.
+
+The proxy manages network connectivity.
+
+Keeping these relationships explicit makes the automation environment easier to understand.
+
+---
+
+# 8. Proxy Mapping and Automation Workers
+
+Workers are responsible for executing automation tasks.
+
+A task can be associated with an account:
+
+```text
+Task
+   ↓
+Account ID
+   ↓
+Browser Environment
+   ↓
+Network Configuration
+   ↓
+Worker
+   ↓
+Platform
+```
+
+For example:
+
+```text
+Scheduler
+    ↓
+Task 1024
+    ↓
+Account A
+    ↓
+Worker A
+    ↓
+Proxy A
+    ↓
+Platform
+```
+
+The worker should not arbitrarily select a network configuration.
+
+Instead, the account's infrastructure configuration should determine which environment the task uses.
+
+This creates a predictable relationship between account, task, worker, and network.
+
+---
+
+# 9. Proxy Mapping and Scheduling
+
+Scheduling systems may manage thousands of tasks.
+
+Each task should retain an association with its account.
+
+For example:
+
+```text
+Task 001
+├── Account A
+├── Publish Content
+└── Scheduled
+
+Task 002
+├── Account B
+├── View Workflow
+└── Scheduled
+
+Task 003
+├── Account C
+├── Publish Content
+└── Scheduled
+```
+
+When a task is executed, the automation system can retrieve the account's environment.
+
+Conceptually:
+
+```text
+Task
+ ↓
+Account
+ ↓
+Environment
+ ↓
+Network
+ ↓
+Worker
+```
+
+This prevents network configuration from becoming a manually selected parameter for every individual task.
+
+---
+
+# 10. Proxy Health Monitoring
+
+A proxy should not be considered permanently healthy simply because it was working when first configured.
+
+Network resources can experience:
+
+* connection failures
+* latency changes
+* authentication errors
+* temporary outages
+* provider-side problems
+* unexpected disconnections
+
+A monitoring system can therefore maintain a status such as:
+
+```text
+Proxy A → Healthy
+Proxy B → Connection Error
+Proxy C → Monitoring
+Proxy D → Unavailable
+```
+
+The purpose of monitoring is to identify infrastructure problems before they become difficult-to-trace account failures.
+
+---
+
+# 11. What Happens When a Proxy Fails?
+
+Suppose:
+
+```text
+Account B
+    ↓
+Proxy B
+    ↓
+Connection Failure
+```
+
+A well-organized system should be able to identify the relationship immediately.
+
+The monitoring workflow might be:
+
+```text
+Connection Failure
+       ↓
+Identify Proxy
+       ↓
+Identify Account
+       ↓
+Identify Active Worker
+       ↓
+Record Error
+       ↓
+Retry / Replace / Review
+```
+
+The correct recovery action depends on the infrastructure and platform.
+
+The important principle is that recovery should be **account-aware**.
+
+Changing network configuration for one account should not unintentionally affect unrelated accounts.
+
+---
+
+# 12. Proxy Replacement
+
+Infrastructure failures sometimes require replacing a network resource.
+
+For example:
+
+```text
+Account A
+   ↓
+Proxy A
+   ↓
+Unavailable
+   ↓
+New Network Configuration
+```
+
+The system should record the change.
+
+A useful history might look like:
+
+```text
+Account A
+
+Previous:
+Proxy A
+
+Current:
+Proxy E
+
+Changed:
+2026-08-28
+
+Reason:
+Connection failure
+```
+
+Maintaining this history makes later troubleshooting easier.
+
+It also prevents operators from losing track of which configuration an account is currently using.
+
+---
+
+# 13. Avoiding Accidental Cross-Account Mapping
+
+One of the most important operational risks is assigning the wrong network configuration to an account.
+
+For example:
+
+```text
+Account A → Proxy B
+Account B → Proxy A
+```
+
+may be an unintended configuration.
+
+A central account-to-network registry can reduce this type of mistake.
+
+Conceptually:
+
+```text
+Account Registry
+
+A001 → N001
+A002 → N002
+A003 → N003
+A004 → N004
+```
+
+Each account has a clear network identifier.
+
+---
+
+# 14. Proxy Mapping at Scale
+
+As the number of accounts increases, manual configuration becomes increasingly difficult.
+
+### Small deployment
+
+```text
+5 Accounts
+↓
+Manual mapping may be manageable
+```
+
+### Medium deployment
+
+```text
+20–50 Accounts
+↓
+Centralized mapping
+↓
+Health monitoring
+↓
+Account-level logging
+```
+
+### Larger deployment
+
+```text
+100+ Accounts
+↓
+Account registry
+↓
+Automated assignment
+↓
+Network inventory
+↓
+Health monitoring
+↓
+Failure detection
+↓
+Recovery workflows
+```
+
+These are architectural examples rather than fixed requirements.
+
+The appropriate infrastructure depends on the number of accounts, workload, network provider, and automation design.
+
+---
+
+# 15. Proxy Inventory
+
+A larger system benefits from maintaining an inventory of network resources.
+
+For example:
+
+```text
+Network Resource Registry
+
+N001
+├── Status: Active
+├── Assigned Account: A001
+├── Last Check: 10:32
+└── Worker: W001
+
+N002
+├── Status: Active
+├── Assigned Account: A002
+├── Last Check: 10:34
+└── Worker: W002
+```
+
+This makes the network layer observable.
+
+An operator can answer:
+
+* Which proxies are currently available?
+* Which accounts are using them?
+* Which resources are failing?
+* Which workers are connected?
+* Which resources are unassigned?
+
+---
+
+# 16. Proxy Mapping and Account Migration
+
+Accounts sometimes need to be moved between workers or infrastructure.
+
+A clear mapping makes migration easier.
+
+For example:
+
+```text
+Before
+
+Account A
+├── Worker 1
+└── Proxy A
+
+
+After
+
+Account A
+├── Worker 2
+└── Proxy A
+```
+
+The account's network configuration does not necessarily need to change just because its worker changes.
+
+Separating these components makes infrastructure migration more flexible.
+
+---
+
+# 17. Proxy Mapping and Cloud Infrastructure
+
+A larger automation system may run workers on multiple machines or servers.
+
+For example:
+
+```text
+Server 1
+├── Worker A
+├── Worker B
+└── Worker C
+
+Server 2
+├── Worker D
+├── Worker E
+└── Worker F
+```
+
+The account mapping can remain independent:
+
+```text
+Account A → Proxy A
+Account B → Proxy B
+Account C → Proxy C
+```
+
+This means the system can move execution workloads without rebuilding the entire account-to-network mapping.
+
+That separation becomes increasingly useful as infrastructure grows.
+
+---
+
+# 18. Proxy Mapping and AI Agents
+
+AI agents can operate above the network-management layer.
+
+For example:
+
+```text
+AI Agent
+    ↓
+Identifies failed workflow
+    ↓
+Account A
+    ↓
+Checks environment status
+    ↓
+Reports network problem
+```
+
+The AI agent does not necessarily need to manage proxy credentials directly.
+
+A safer architecture is to expose higher-level infrastructure information:
+
+```text
+Account A
+Status: Network unavailable
+Worker: W001
+Last successful connection: 10:21
+```
+
+The AI layer can then reason about the situation while the underlying infrastructure remains responsible for network management.
+
+---
+
+# 19. Why Proxy Mapping Should Not Be Treated as a Safety Guarantee
+
+A proxy can change or route network traffic, but it does not make an account immune from platform restrictions.
+
+Social platforms can evaluate many signals, including:
+
+* account behavior
+* authentication activity
+* browser characteristics
+* network information
+* device signals
+* activity patterns
+* platform-specific signals
+
+Therefore:
+
+> **A proxy is an infrastructure component, not a guarantee of account safety or platform acceptance.**
+
+Proxy mapping should be used to improve infrastructure organization, consistency, and troubleshooting.
+
+It should not be presented as a method for bypassing platform security or enforcement systems.
+
+---
+
+# 20. Common Proxy Mapping Mistakes
+
+## Mistake 1: No central mapping
+
+If proxy assignments exist only in individual worker configurations, it becomes difficult to determine which account is using which network resource.
+
+## Mistake 2: Reusing resources without tracking
+
+A network resource may be accidentally assigned to multiple workflows when its ownership is not recorded.
+
+## Mistake 3: No health monitoring
+
+A failed network resource can continue generating failed automation tasks if its status is not monitored.
+
+## Mistake 4: Changing assignments without recording the change
+
+Without configuration history, troubleshooting can become difficult.
+
+## Mistake 5: Mixing network and browser state
+
+A proxy controls connectivity.
+
+A browser profile controls browser state.
+
+They should be managed as separate components.
+
+---
+
+# 21. Recommended Data Model
+
+A simple account-to-network relationship might contain:
+
+```text
+Account
+├── Account ID
+├── Platform
+├── Browser Environment ID
+├── Network Configuration ID
+├── Worker ID
+└── Status
+```
+
+The network resource can have its own record:
+
+```text
+Network Configuration
+├── Network ID
+├── Provider
+├── Endpoint
+├── Authentication Status
+├── Health Status
+├── Assigned Account
+└── Last Checked
+```
+
+The exact fields depend on the implementation.
+
+The architectural principle is more important than the database schema:
+
+**Account configuration and network configuration should be related, but not unnecessarily merged into one object.**
+
+---
+
+# 22. Proxy Mapping Checklist
+
+Before operating a multi-account automation system, verify that:
+
+* [ ] Every account has a clearly identifiable network configuration.
+* [ ] Every network resource has a unique internal identifier.
+* [ ] Account-to-network assignments are recorded.
+* [ ] Network health can be monitored.
+* [ ] Failed connections can be associated with accounts.
+* [ ] Network changes are recorded.
+* [ ] Browser profiles and network resources are managed separately.
+* [ ] Workers can retrieve the correct account environment.
+* [ ] Recovery procedures do not unintentionally modify unrelated accounts.
+* [ ] Proxy credentials are protected.
+* [ ] Production credentials are never committed to a public repository.
+* [ ] Network configuration is not treated as a guarantee against platform restrictions.
+
+---
+
+# 23. Reference Architecture
+
+Putting account, browser, proxy, scheduling, and worker management together:
+
+```text
+                         Account Manager
+                                │
+               ┌────────────────┼────────────────┐
+               ▼                ▼                ▼
+           Account A        Account B        Account C
+               │                │                │
+        ┌──────┼──────┐  ┌──────┼──────┐  ┌──────┼──────┐
+        ▼      ▼      ▼  ▼      ▼      ▼  ▼      ▼      ▼
+     Session Browser Network Session Browser Network Session Browser Network
+        A       A       A       B       B       B       C       C       C
+                        │
+                        ▼
+                    Task Queue
+                        │
+               ┌────────┼────────┐
+               ▼        ▼        ▼
+            Worker A Worker B Worker C
+               │        │        │
+               └────────┼────────┘
+                        ▼
+                 Social Platforms
+                        │
+                        ▼
+                   Monitoring
+```
+
+The architecture separates:
+
+* account identity
+* browser environments
+* network resources
+* tasks
+* workers
+* platform execution
+* monitoring
+
+This makes each layer easier to manage independently.
+
+---
+
+# 24. Tools and Platforms
+
+Proxy account mapping can be implemented using custom infrastructure, automation frameworks, proxy management systems, or larger social media automation platforms.
+
+The appropriate approach depends on:
+
+* number of accounts
+* number of network resources
+* platform requirements
+* infrastructure size
+* monitoring requirements
+* automation framework
+* security requirements
+
+A platform such as JarveePro can provide account and automation management functionality without requiring every infrastructure component to be developed from scratch.
+
+However, the underlying architectural principles remain relevant regardless of the software being used.
+
+---
+
+# 25. Related Topics
+
+* [Social Media Automation Architecture](../Social%20Media%20Automation%20Architecture)
+* [Account Isolation](../account-management/account-isolation.md)
+* [Browser Fingerprinting](../browser-automation/browser-fingerprinting.md)
+* [Managing Multiple Social Media Accounts](../account-management/managing-multiple-social-accounts.md)
+* [Automation Monitoring](../troubleshooting/account-monitoring.md)
+* [AI Social Media Agents](../ai-agents/ai-social-media-agents.md)
+
+---
+
+# Conclusion
+
+Proxy account mapping is an important part of multi-account social media automation infrastructure.
+
+The goal is not simply to assign a proxy to an account.
+
+A reliable system should maintain a clear relationship between:
+
+**Account → Browser Environment → Network Configuration → Worker → Task**
+
+This makes network resources easier to inventory, monitor, troubleshoot, replace, and scale.
+
+As the number of accounts grows, centralized mapping and account-level monitoring become increasingly valuable.
+
+Most importantly, proxy configuration should be treated as an infrastructure and operational-management layer rather than a guarantee of account safety or platform acceptance.
+
+Good automation infrastructure is not about adding more complexity.
+
+It is about making every relationship in the system **clear, traceable, and recoverable**.
+
+---
+
+**Last Updated:** 2026-08-28
+**Repository:** Social Media AI Agents
