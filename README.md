@@ -1,4 +1,4 @@
-# Social Media Automation Playbook
+# Social Media Automation AI Agents
 
 A practical, technical knowledge base for designing, operating, and scaling social media automation systems.
 
