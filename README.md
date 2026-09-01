@@ -305,7 +305,7 @@ Please focus on reproducible technical information rather than promotional conte
 ---
 
 ## Disclaimer
-Rederence: https://jarveepro.com/ 
+Reference: https://jarveepro.com/ 
 
 Social platforms have their own terms, APIs, automation policies, and anti-abuse systems.
 
